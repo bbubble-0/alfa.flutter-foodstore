@@ -1,0 +1,35 @@
+import 'package:flutter_application/resource/model/shipping_cost_model.dart';
+import 'package:flutter_application/resource/remote/checkout_remote_resource.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'shipping_cost_cubit.freezed.dart';
+part 'shipping_cost_state.dart';
+
+class ShippingCostCubit extends Cubit<ShippingCostState> {
+  final CheckoutRemoteResource checkoutRemoteResource;
+
+  ShippingCostCubit(this.checkoutRemoteResource)
+      : super(const ShippingCostState.initial());
+
+  Future<void> getShippingCost(
+    int destination,
+    int weight,
+    String courier,
+  ) async {
+    emit(const ShippingCostState.loading());
+    final result = await checkoutRemoteResource.getShippingCost(
+      destination,
+      weight,
+      courier,
+    );
+    result.fold(
+      (error) => emit(ShippingCostState.error(error)),
+      (shippingCost) => emit(ShippingCostState.loaded(shippingCost)),
+    );
+  }
+
+  void resetShippingCost() {
+    emit(const ShippingCostState.initial());
+  }
+}
